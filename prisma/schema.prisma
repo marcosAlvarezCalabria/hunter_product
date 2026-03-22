@@ -1,0 +1,53 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model ScrapeRun {
+  id                String           @id @default(cuid())
+  createdAt         DateTime         @default(now())
+  finishedAt        DateTime?
+  status            String
+  totalScanned      Int              @default(0)
+  totalValid        Int              @default(0)
+  minDiscount       Int
+  category          String
+  maxPagesToScan    Int
+  onlyInStock       Boolean
+  notes             String?
+  reportStatus      String           @default("pending")
+  snapshotJson      String?
+  products          ScrapedProduct[]
+}
+
+model ScrapedProduct {
+  id               String    @id @default(cuid())
+  productKey       String    @unique
+  source           String
+  title            String
+  brand            String?
+  currentPrice     Float
+  originalPrice    Float?
+  discountPercent  Float?
+  confidence       String
+  productUrl       String    @unique
+  imageUrl         String?
+  availability     String?
+  sku              String?
+  ean              String?
+  categoryPath     String?
+  isMarketplace    Boolean   @default(false)
+  scrapedAt        DateTime
+  lastSeenAt       DateTime  @default(now())
+  rawPayload       String?
+  scrapeRunId      String
+  scrapeRun        ScrapeRun @relation(fields: [scrapeRunId], references: [id], onDelete: Cascade)
+
+  @@index([discountPercent])
+  @@index([brand])
+  @@index([availability])
+}
